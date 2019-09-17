@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>WebSocket Test</title>
+    <script language="javascript" type="text/javascript">
+
+        var wsUri;
+        var output;
+
+        function init() {
+            output = document.getElementById("output");
+        }
+
+        function doOpen(evt) {
+            wsUri = document.getElementById("wsUri").value;
+            websocket = new WebSocket(wsUri);
+            testWebSocket();
+        }
+
+        function testWebSocket() {
+            websocket.onopen = function (evt) { onOpen(evt) };
+            websocket.onclose = function (evt) { onClose(evt) };
+            websocket.onmessage = function (evt) { onMessage(evt) };
+            websocket.onerror = function (evt) { onError(evt) };
+        }
+
+        function onOpen(evt) {
+            writeToScreen("CONNECTED");
+            document.getElementById("connect").disabled = true;
+            document.getElementById("disconnect").disabled = false;
+            document.getElementById("sendMessage").disabled = false;
+            document.getElementById("send").disabled = false;
+        }
+
+        function doClose(evt) {
+            websocket.close();
+        }
+
+        function onClose(evt) {
+            writeToScreen("DISCONNECTED");
+            document.getElementById("connect").disabled = false;
+            document.getElementById("disconnect").disabled = true;
+            document.getElementById("sendMessage").disabled = true;
+            document.getElementById("send").disabled = true;
+        }
+
+        function onMessage(evt) {
+            writeToScreen('<span style="color: #2196f3;">RESPONSE: ' + evt.data + '</span>');
+        }
+
+        function onError(evt) {
+            writeToScreen('<span style="color: #ff5722;">ERROR:</span> ' + evt.data);
+        }
+
+        function doSend(message) {
+            writeToScreen("SENT: " + message);
+            websocket.send(message);
+        }
+
+        function doSendMessage() {
+            message = document.getElementById("sendMessage").value;
+            doSend(message);
+        }
+
+        function writeToScreen(message) {
+            var pre = document.createElement("p");
+            pre.style.wordWrap = "break-word";
+            pre.innerHTML = message;
+            output.appendChild(pre);
+        }
+
+        function doClear(message) {
+            output.innerHTML = "";
+        }
+
+        window.addEventListener("load", init, false);
+
+    </script>
+    <style>
+            html, body {
+                background-color: #333;
+                color: #ccc;
+            }
+            #echo-config {
+                float: left;
+            }
+            #echo-output {
+                float: left;
+                margin-left: 20px;
+                padding-left: 20px;
+                width: 350px;
+                border-left: solid 1px #cccccc;
+                margin-top: 10px;
+            }
+            #output {
+                border: solid 1px #ccc;
+                background-color: #222;
+                padding: 5px;
+                width: 100%;
+                height: 172px;
+                overflow-y: scroll;
+            }
+            .echo-button {
+                margin-top: 5px;
+            }
+    </style>
+</head>
+
+<body>
+    <h2>WebSocket Test</h2>
+
+    <div id="echo-config">
+        <strong>Location:</strong><br>
+        <input class="draw-border" id="wsUri" size="35" value="wss://echo.websocket.org/">
+        <br>
+        <label id="secureCbLabel" style="font-size: smaller;">
+                Use secure WebSocket (TLS)
+                <input class="draw-border echo-checkbox" type="checkbox" id="secureCb" onClick="toggleTls();">
+        </label><br>
+        <br>
+        <button class="echo-button" id="connect" onClick="doOpen();">Connect</button>
+        <button class="echo-button" id="disconnect" disabled="disabled" onClick="doClose();">Disconnect</button>
+        <br>
+        <br>
+        <strong>Message:</strong><br>
+        <input class="draw-border" id="sendMessage" size="35" disabled="disabled" value="Rock it with HTML5 WebSocket">
+        <br>
+        <button class="echo-button" id="send" disabled="disabled" onClick="doSendMessage();">Send</button>
+    </div>
+
+    <div id="echo-output">
+        <div id="output"></div>
+        <button class="echo-button" id="clearLogBut" onClick="doClear();">Clear log</button>
+    </div>
+</body>

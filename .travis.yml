@@ -1,0 +1,43 @@
+dist: trusty
+sudo: required
+
+services: docker
+
+language: bash
+
+branches:
+  only:
+    - master
+
+before_script:
+  - env | sort
+
+script:
+  # Test container build
+  - travis_retry travis_wait 60 docker-compose build
+  - docker images
+  # Test container run
+  - docker-compose up -d && sleep 10
+  - docker-compose ps
+  - docker-compose logs
+  - docker-compose ps "signalmaster" | grep "Up" || exit 1
+  - docker-compose logs "signalmaster" | grep 'signal master is running at'
+  - docker-compose logs "sut" | grep 'Tests complete, killing server.'
+  # Test container restart
+  - docker-compose down
+  - docker-compose up -d && sleep 10
+  - docker-compose ps
+  - docker-compose logs
+  - docker-compose ps "signalmaster" | grep "Up" || exit 1
+  - docker-compose logs "signalmaster" | grep 'signal master is running at'
+  - docker-compose logs "sut" | grep 'Tests complete, killing server.'
+
+notifications:
+  email: false
+
+#matrix:
+#  allow_failures:
+#    - env: VARIANT=dummy
+
+env: # Environments
+  - VARIANT=dummy

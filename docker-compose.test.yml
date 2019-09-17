@@ -1,0 +1,84 @@
+version: "2"
+
+services:
+  # https://docs.docker.com/docker-hub/builds/automated-testing/
+  sut:
+    build:
+      context: ./
+      dockerfile: Dockerfile_test
+    command: node test.js
+    container_name: sut
+    depends_on:
+      - signalmaster
+      - coturn
+    environment:
+      # Node setup
+      - NODE_ENV=development
+      - HOST=signalmaster
+      - PORT=8888
+
+  signalmaster:
+    # For development or CI, build from local Dockerfile
+    build: ./
+    # For production, download prebuilt image
+    #image: monogramm:docker-talk-signalmaster:latest
+    container_name: signalmaster
+    #restart: always
+    ports:
+      - 8888:8888
+    env_file: .env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      # If you need SSL connection, you can provide your own certificates
+      # - ./certs:/etc/letsencrypt
+      # - ./certs-data:/data/letsencrypt
+    environment:
+      # Node setup
+      - NODE_ENV=production
+      - HOST=${HOST}
+      - PORT=8888
+      # STUN setup
+      - STUN_SERVER_DOMAIN=${STUN_DOMAIN}
+      - STUN_SERVER_PORT=5349
+      # TURN setup
+      - TURN_SERVER_DOMAIN=${TURN_DOMAIN}
+      - TURN_SERVER_PORT=5349
+      - TURN_SERVER_SECRET=${TURN_SECRET}
+      # SSL setup
+      - SSL_KEY=./sslcerts/key.pem
+      - SSL_CERT=./sslcerts/cert.pem
+      #- SSL_KEY=/etc/letsencrypt/live/${DOMAIN}/privkey.pem
+      #- SSL_CERT=/etc/letsencrypt/live/${DOMAIN}/cert.pem
+
+  coturn:
+    image: monogramm/docker-coturn:latest
+    container_name: coturn
+    #restart: always
+    network_mode: "host"
+    tty: true
+    env_file: .env
+    volumes:
+      - /srv/coturn/data:/srv
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      # If you need SSL connection, you can provide your own certificates
+      # - ./certs:/etc/letsencrypt
+      # - ./certs-data:/data/letsencrypt
+    environment:
+      - DEBUG=0
+      - PROD=1
+      - LISTENING_PORT=3478
+      - TLS_LISTENING_PORT=5349
+      - ALT_LISTENING_PORT=3479
+      - ALT_TLS_LISTENING_PORT=5350
+      - STATIC_AUTH_SECRET=${TURN_SECRET}
+      - REALM=${DOMAIN}
+      # Replace by the public IP of the server
+      - LISTEN_IPS=127.0.0.1
+      - RELAY_IP=127.0.0.1
+      # If you need SSL connection, you can provide your own certificates
+      - TLS_KEY=./sslcerts/key.pem
+      - TLS_CERT=./sslcerts/cert.pem
+      #- TLS_CERT=/etc/letsencrypt/live/${DOMAIN}/privkey.pem
+      #- TLS_KEY=/etc/letsencrypt/live/${DOMAIN}/cert.pem

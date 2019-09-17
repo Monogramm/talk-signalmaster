@@ -1,0 +1,30 @@
+{
+  "isDev": false,
+  "server": {
+    "port": 8888,
+    "host": "localhost",
+    "/* secure */": "/* whether this connects via https */",
+    "secure": true,
+    "key": null,
+    "cert": null,
+    "password": null
+  },
+  "rooms": {
+    "/* maxClients */": "/* maximum number of clients per room. 0 = no limit */",
+    "maxClients": 0
+  },
+  "stunservers": [
+    {
+      "urls": "stun:${STUN_SERVER_DOMAIN}:${STUN_SERVER_PORT}"
+    }
+  ],
+  "turnservers": [
+    {
+      "urls": [
+        "turn:${TURN_SERVER_DOMAIN}:${TURN_SERVER_PORT}"
+      ],
+      "secret": "${TURN_SERVER_SECRET}",
+      "expiry": 86400
+    }
+  ]
+}
