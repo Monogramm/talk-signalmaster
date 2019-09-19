@@ -24,6 +24,8 @@ Read more:
 - [NextCloud Talk External signaling API](https://github.com/nextcloud/spreed/blob/master/docs/standalone-signaling-api-v1.md)
 - [SimpleWebRTC.com](http://simplewebrtc.com)
 
+This project is (currently) using [WebSocket-Node](https://github.com/theturtle32/WebSocket-Node).
+
 ## Running
 
 Running the server requires a valid installation of node.js which can be installed from the [nodejs.org](nodejs.org) website. After installing the package you will need to install the node dependencies.
@@ -34,11 +36,19 @@ Running the server requires a valid installation of node.js which can be install
 
 3. In the console you will see a message which tells you where the server is running:
 
-        "NextCloud Talk -- signal master is running at: http://localhost:8888"
+        "NextCloud Talk -- HTTP server is running at: http://localhost:8888"
+        "NextCloud Talk -- signal master is running at: ws://localhost:8888"
 
-4. Open a web browser to the specified URL and port to ensure that the server is running properly. You should see the message when you go to the /socket.io/ subfolder (e.g. http://localhost:8888/socket.io/), you should see a message like this:
+## Testing
 
-        {"code":0,"message":"Transport unknown"}
+You can run unit tests with node:
+
+1. `npm install`
+
+2. run the test using `node test.js`
+
+You can also use a simple web page.
+Simply open the `test.html` file in your browser to messages exchange with the Web Socket.
 
 ### Production Environment
 
@@ -51,7 +61,7 @@ $ ./scripts/generate-ssl-certs.sh
 * run in Production mode
 
 ```shell
-$ NODE_ENV=production STUN_SERVER_DOMAIN=your.turn.servers.here STUN_SERVER_PORT=5449 TURN_SERVER_DOMAIN=your.turn.servers.here TURN_SERVER_PORT=5449 TURN_SERVER_SECRET=turnserversharedsecret node server.js
+$ NODE_ENV=production STUN_SERVER_DOMAIN=your.turn.servers.here STUN_SERVER_PORT=5449 TURN_SERVER_DOMAIN=your.turn.servers.here TURN_SERVER_PORT=5449 TURN_SERVER_SECRET=turnserversharedsecret ALLOWED_ORIGIN=.* node server.js
 ```
 
 ## Use with Express
@@ -98,4 +108,5 @@ TURN_SERVER_SECRET=
 SSL_KEY=./sslcerts/key.pem
 SSL_CERT=./sslcerts/cert.pem
 SSL_PASSWORD=
+ALLOWED_ORIGIN=cloud.domain.com
 ```

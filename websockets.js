@@ -16,14 +16,61 @@
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-var socketIO = require('socket.io'),
-    uuid = require('uuid/v4'),
-    crypto = require('crypto');
+var uuid = require('uuid/v4'),
+    crypto = require('crypto'),
+    connections = {};
 
 module.exports = function (server, config) {
-    var io = socketIO.listen(server);
 
-    io.sockets.on('connection', function (client) {
+    server.on('request', function (request) {
+        if (!originIsAllowed(request.origin)) {
+            // Make sure we only accept requests from an allowed origin
+            request.reject();
+            log('Connection from origin ' + request.origin + ' rejected.');
+            return;
+        }
+        else if (config.isDev) {
+            log('Connection from origin ' + request.origin);
+        }
+
+        var connection = request.accept(null, request.origin);
+
+        // Store a reference to the connection using an incrementing ID
+        connection.id = uuid();
+        connections[connection.id] = connection;
+        if (config.isDev) {
+            log('Connection ID ' + connection.id + ' accepted.');
+        }
+
+        connection.on('message', function(message) {
+            if (message.type === 'utf8') {
+                if (config.isDev) {
+                    log('Received Message: ' + message.utf8Data);
+                }
+                connection.sendUTF(message.utf8Data);
+            }
+            else if (message.type === 'binary') {
+                if (config.isDev) {
+                    log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+                }
+                connection.sendBytes(message.binaryData);
+            }
+        });
+
+        connection.on('error', function(error) {
+            log('Error received: ' + error);
+        });
+
+        connection.on('close', function(reasonCode, description) {
+            if (config.isDev) {
+                log('Peer ' + connection.remoteAddress + ' disconnected the connection ID ' + connection.id);
+            }
+            delete connections[connection.id];
+        });
+
+        // Old Socket.io implementation for SimpleWebRTC
+        /*
+
         client.resources = {
             screen: false,
             video: true,
@@ -139,8 +186,35 @@ module.exports = function (server, config) {
             });
         }
         client.emit('turnservers', credentials);
+        */
     });
 
+    function log(message) {
+        console.log('[' + (new Date().toISOString()) + '] - ' + message);
+    }
+
+    function originIsAllowed(origin) {
+        var regex = new RegExp(config.origins.regex, 'i');
+        return regex.test(origin);
+    }
+
+    // Broadcast to all open connections
+    function broadcast(data) {
+        Object.keys(connections).forEach(function(key) {
+            var connection = connections[key];
+            if (connection.connected) {
+                connection.send(data);
+            }
+        });
+    }
+
+    // Send a message to a connection by its connectionID
+    function sendToConnectionId(connectionID, data) {
+        var connection = connections[connectionID];
+        if (connection && connection.connected) {
+            connection.send(data);
+        }
+    }
 
     function describeRoom(name) {
         var adapter = io.nsps['/'].adapter;

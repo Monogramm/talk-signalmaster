@@ -9,6 +9,10 @@
     "cert": null,
     "password": null
   },
+  "origins": {
+    "/* regex */": "/* regular expression of allowed origins */",
+    "regex": ".*"
+  },
   "rooms": {
     "/* maxClients */": "/* maximum number of clients per room. 0 = no limit */",
     "maxClients": 0

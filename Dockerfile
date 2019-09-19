@@ -40,7 +40,8 @@ ENV NODE_ENV=production \
     TURN_SERVER_SECRET= \
     SSL_KEY=./sslcerts/key.pem \
     SSL_CERT=./sslcerts/cert.pem \
-    SSL_PASSWORD=
+    SSL_PASSWORD= \
+    ALLOWED_ORIGIN=.*
 
 USER node
 CMD ["node", "server.js"]

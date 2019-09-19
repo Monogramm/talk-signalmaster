@@ -34,7 +34,8 @@ ENV NODE_ENV=development \
     TURN_SERVER_SECRET= \
     SSL_KEY= \
     SSL_CERT= \
-    SSL_PASSWORD=
+    SSL_PASSWORD= \
+    ALLOWED_ORIGIN=.*
 
 USER node
 CMD ["node", "test.js"]

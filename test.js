@@ -29,27 +29,84 @@ output.on('end', function () {
     process.exit(0);
 });
 
-var io = require('socket.io-client');
+var WebSocketClient = require('websocket').client;
 
 var socketURL;
 if (config.server.secure) {
-    socketURL = "https://" + config.server.host + ":" + config.server.port;
+    socketURL = "wss://" + config.server.host + ":" + config.server.port;
 } else {
-    socketURL = "http://" + config.server.host + ":" + config.server.port;
+    socketURL = "ws://" + config.server.host + ":" + config.server.port;
 }
 
-var socketOptions = {
-    transports: ['websocket'],
-    'force new connection': true,
-    "secure": config.server.secure
-};
+test('it should be able to connect', function (t) {
+    t.plan(1);
+    var client = new WebSocketClient();
+
+    client.on('connectFailed', function(error) {
+        t.fail();
+    });
+    client.on('connect', function () {
+        t.pass();
+    });
+
+    client.connect(socketURL, null);
+});
 
 test('it should not crash when sent an empty message', function (t) {
     t.plan(1);
-    var client = io.connect(socketURL, socketOptions);
+    var client = new WebSocketClient();
 
-    client.on('connect', function () {
-        client.emit('message');
-        t.ok(true);
+    client.on('connectFailed', function(error) {
+        t.fail();
     });
+    client.on('connect', function (connection) {
+        connection.send('message');
+        t.pass();
+    });
+
+    client.connect(socketURL, null);
+});
+
+test('it should not crash when sent a text message', function (t) {
+    t.plan(1);
+    var client = new WebSocketClient();
+
+    client.on('connectFailed', function(error) {
+        t.fail();
+    });
+    client.on('connect', function (connection) {
+        const msg = 'Hello World!';
+        connection.on('message', function(message) {
+            t.equal(message.utf8Data, msg);
+        });
+        connection.sendUTF(msg);
+    });
+
+    client.connect(socketURL, null);
+});
+
+test('it should not crash when sent a custom message', function (t) {
+    t.plan(1);
+    var client = new WebSocketClient();
+
+    client.on('connectFailed', function(error) {
+        t.fail();
+    });
+    client.on('connect', function (connection) {
+        const msg = 'Hello World!';
+        connection.on('message', function(message) {
+            t.ok(message.utf8Data === msg);
+        });
+        connection.send({
+            id: 'random_id',
+            type: 'custom',
+            custom: {
+                text: msg,
+                custom_field: 42,
+            },
+            toString: function() { return this.custom.text; }
+        });
+    });
+
+    client.connect(socketURL, null);
 });

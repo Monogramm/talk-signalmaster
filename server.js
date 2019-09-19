@@ -19,44 +19,61 @@
 /*global console*/
 var config = require('getconfig'),
     fs = require('fs'),
-    sockets = require('./sockets'),
+    websockets = require('./websockets'),
     port = parseInt(process.env.PORT || config.server.port, 10),
     host = process.env.HOST || config.server.host,
     key = process.env.SSL_KEY || config.server.key,
     cert = process.env.SSL_CERT || config.server.cert,
     password = process.env.SSL_PASSWORD || config.server.password,
-    server_handler = function (req, res) {
-        if (req.url === '/healthcheck') {
+    server_handler = function (request, response) {
+        if (request.url === '/healthcheck') {
             console.log(Date.now(), 'healthcheck');
-            res.writeHead(200);
-            res.end();
+            response.writeHead(200);
+            response.end('OK');
             return;
         }
-        res.writeHead(404);
-        res.end();
+        response.writeHead(404);
+        response.end();
     },
-    server = null;
+    server = null,
+    WebSocketServer = require('websocket').server,
+    wsServer = null;
 
-// Create an http(s) server instance to that socket.io can listen to
+// Create an http(s) server instance that the websocket server can listen to
 if (config.server.secure && key && cert) {
-    server = require('https').Server({
+    server = require('https').createServer({
         key: fs.readFileSync(key),
         cert: fs.readFileSync(cert),
         passphrase: password
     }, server_handler);
 } else {
-    server = require('http').Server(server_handler);
+    server = require('http').createServer(server_handler);
 }
-server.listen(port);
 
-sockets(server, config);
+server.listen(port, function() {
+    var httpUrl,
+        wsUrl;
+    if (config.server.secure) {
+        httpUrl = "https://" + host + ":" + port;
+        wsUrl = "wss://" + host + ":" + port;
+    } else {
+        httpUrl = "http://" + host + ":" + port;
+        wsUrl = "ws://" + host + ":" + port;
+    }
+    console.log("NextCloud Talk -- HTTP server is running at '" + httpUrl + "'");
+    console.log("NextCloud Talk -- signal master is running at '" + wsUrl + "'");
+});
+
+wsServer = new WebSocketServer({
+    httpServer: server,
+    // You should not use autoAcceptConnections for production
+    // applications, as it defeats all standard cross-origin protection
+    // facilities built into the protocol and the browser.  You should
+    // *always* verify the connection's origin and decide whether or not
+    // to accept it.
+    autoAcceptConnections: false
+});
+
+websockets(wsServer, config);
 
 if (config.uid) process.setuid(config.uid);
-
-var httpUrl;
-if (config.server.secure) {
-    httpUrl = "https://" + host + ":" + port;
-} else {
-    httpUrl = "http://" + host + ":" + port;
-}
-console.log('NextCloud Talk -- signal master is running at: ' + httpUrl);
