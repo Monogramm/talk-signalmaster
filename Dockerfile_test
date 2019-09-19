@@ -35,6 +35,7 @@ ENV NODE_ENV=development \
     SSL_KEY= \
     SSL_CERT= \
     SSL_PASSWORD= \
+    NEXTCLOUD_SHARED_SECRET=dummy_shared_secret \
     ALLOWED_ORIGIN=.*
 
 USER node

@@ -3,7 +3,9 @@
   "server": {
     "port": 8888,
     "host": "localhost",
-    "/* secure */": "/* whether this connects via https */",
+    "/* secret */": "/* shared secret */",
+    "secret": "${NEXTCLOUD_SHARED_SECRET}",
+    "/* secure */": "/* whether this connects via ssl */",
     "secure": true,
     "key": null,
     "cert": null,

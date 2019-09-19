@@ -41,6 +41,7 @@ ENV NODE_ENV=production \
     SSL_KEY=./sslcerts/key.pem \
     SSL_CERT=./sslcerts/cert.pem \
     SSL_PASSWORD= \
+    NEXTCLOUD_SHARED_SECRET=dummy_shared_secret \
     ALLOWED_ORIGIN=.*
 
 USER node

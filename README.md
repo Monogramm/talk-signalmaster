@@ -61,7 +61,7 @@ $ ./scripts/generate-ssl-certs.sh
 * run in Production mode
 
 ```shell
-$ NODE_ENV=production STUN_SERVER_DOMAIN=your.turn.servers.here STUN_SERVER_PORT=5449 TURN_SERVER_DOMAIN=your.turn.servers.here TURN_SERVER_PORT=5449 TURN_SERVER_SECRET=turnserversharedsecret ALLOWED_ORIGIN=.* node server.js
+$ NODE_ENV=production STUN_SERVER_DOMAIN=your.turn.servers.here STUN_SERVER_PORT=5449 TURN_SERVER_DOMAIN=your.turn.servers.here TURN_SERVER_PORT=5449 TURN_SERVER_SECRET=turnserversharedsecret ALLOWED_ORIGIN=.* NEXTCLOUD_SHARED_SECRET=nextcloudserversharedsecret node server.js
 ```
 
 ## Use with Express

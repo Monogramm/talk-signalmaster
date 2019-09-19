@@ -3,6 +3,8 @@
   "server": {
     "port": 8888,
     "host": "localhost",
+    "/* secret */": "/* shared secret */",
+    "secret": "dummy_shared_secret",
     "/* secure */": "/* whether this connects via https */",
     "secure": false,
     "key": null,
