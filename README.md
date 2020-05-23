@@ -9,7 +9,10 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/monogramm/docker-talk-signalmaster.svg)](https://hub.docker.com/r/monogramm/docker-talk-signalmaster/)
 [![Docker layers](https://images.microbadger.com/badges/image/monogramm/docker-talk-signalmaster.svg)](https://microbadger.com/images/monogramm/docker-talk-signalmaster)
 
-:construction: **This image is still in development!**
+# :warning: This project is no longer necessary since NextCloud OpenSourced their high performance signaling server :heart:
+
+* https://nextcloud.com/blog/open-sourcing-talk-back-end-rc-of-talk-9-brings-lots-of-improvements/#hpb
+* https://github.com/strukturag/nextcloud-spreed-signaling
 
 # talk-signalmaster
 
